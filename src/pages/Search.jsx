@@ -98,7 +98,7 @@ export default function Search() {
         <form className="search__form" onSubmit={onSubmit}>
           <div className="search__field">
             <label>
-              Make (ex:Lamborghini, Porshe, Audi, toyota, honda, bmw)
+              Make (ex:Lamborghini, Porsche, Audi, toyota, honda, bmw)
             </label>
             <input
               value={query}
