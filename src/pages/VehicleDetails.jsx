@@ -4,6 +4,8 @@ import { getVehicleById } from "../api/vehicleApi";
 import SkeletonText from "../components/SkeletonText";
 import "./VehicleDetails.css";
 
+const PORSCHE_PLACEHOLDER =
+  "https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=1600&q=60";
 
 export default function VehicleDetails() {
   const navigate = useNavigate();
@@ -41,7 +43,7 @@ export default function VehicleDetails() {
   return (
     <section className="page container">
       <div className="rowBetween">
-        <button className="ghostBtn" onClick={() => navigate(-1)}>
+        <button className="ghostBtn" onClick={() => navigate(-1)} type="button">
           ← Back
         </button>
         <div className="mutedSmall">
@@ -52,7 +54,7 @@ export default function VehicleDetails() {
       {error && <div className="errorBox">{error}</div>}
 
       <div className="detailGrid">
-        {/* LEFT SIDEBAR — “all correct api data on left” */}
+        {/* LEFT SIDEBAR */}
         <aside className="detailSidebar">
           <h3 className="sidebarTitle">Vehicle Data</h3>
 
@@ -68,30 +70,8 @@ export default function VehicleDetails() {
               <div className="kvRow"><span>Drivetrain</span><strong>{vehicle.drivetrain}</strong></div>
               <div className="kvRow"><span>MPG</span><strong>{vehicle.mpg}</strong></div>
               <div className="kvRow"><span>Price / Month</span><strong>${vehicle.pricePerMonth}</strong></div>
-
-              <div className="divider" />
-
-              <div className="mutedSmall">
-                ✅ Replace mock fields with your API’s fields here.
-              </div>
             </div>
           ) : null}
-
-          <div className="divider" />
-
-          {/* CLEAR API SPOTS */}
-          <div className="apiBox">
-            <div className="apiTitle">API Hook Points</div>
-            <div className="apiLine">
-              <span>BASE:</span> <code>src/api/vehicleApi.js → API_BASE_URL</code>
-            </div>
-            <div className="apiLine">
-              <span>DETAIL:</span> <code>GET /vehicles/:id</code>
-            </div>
-            <div className="apiLine">
-              <span>SEARCH:</span> <code>GET /vehicles?query=&amp;state=</code>
-            </div>
-          </div>
         </aside>
 
         {/* RIGHT CONTENT */}
@@ -100,14 +80,22 @@ export default function VehicleDetails() {
             <div className="detailHeroSkeleton shimmer" />
           ) : vehicle ? (
             <>
-              <div className="detailHero">
-                <img src={vehicle.imageUrl} alt={`${vehicle.year} ${vehicle.make} ${vehicle.model}`} />
+              <div
+                className="detailHero"
+                style={{
+                  backgroundImage: `url("${
+                    vehicle?.imageUrl || PORSCHE_PLACEHOLDER
+                  }")`,
+                }}
+              >
                 <div className="detailOverlay">
                   <div className="detailType">{vehicle.type}</div>
                   <h1 className="detailTitle">
                     {vehicle.year} {vehicle.make} {vehicle.model}
                   </h1>
-                  <p className="detailSub">${vehicle.pricePerMonth}/mo • {vehicle.drivetrain} • {vehicle.mpg} mpg</p>
+                  <p className="detailSub">
+                    ${vehicle.pricePerMonth}/mo • {vehicle.drivetrain} • {vehicle.mpg} mpg
+                  </p>
                 </div>
               </div>
 
@@ -115,15 +103,14 @@ export default function VehicleDetails() {
                 <div className="panel">
                   <h4>Why it’s badass</h4>
                   <p>
-                    Clean route-driven detail pages, skeleton loading, and an API-ready data sidebar.
-                    Swap the mock API with your real endpoint and it’s production-ready.
+                    Route-driven details, stable placeholders, and API-ready data.
                   </p>
                 </div>
 
                 <div className="panel">
                   <h4>Direct URL support</h4>
                   <p>
-                    This page works with <code>/vehicle/{id}</code> even on refresh because it loads by param.
+                    Refresh-safe route loading via <code>/vehicle/:id</code>.
                   </p>
                 </div>
               </div>
