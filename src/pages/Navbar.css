@@ -1,0 +1,105 @@
+.navHeader{
+  position:sticky; top:0; z-index:50;
+  backdrop-filter: blur(12px);
+  background: rgba(7,10,18,.55);
+  border-bottom:1px solid var(--stroke);
+}
+
+.navContainer{
+  width:min(1100px, calc(100% - 32px));
+  margin:0 auto;
+  padding:14px 0;
+}
+
+.brandRow{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+}
+
+.brand{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  font-weight:800;
+  letter-spacing:.5px;
+}
+
+.brandDot{
+  width:14px; height:14px; border-radius:50%;
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  box-shadow:0 0 18px rgba(255,58,165,.35);
+}
+
+.brandText{text-transform:lowercase}
+
+.navLinks{
+  display:flex;
+  align-items:center;
+  gap:14px;
+  margin-top:12px;
+}
+
+.navLink{
+  padding:10px 12px;
+  border-radius:999px;
+  color:var(--muted);
+  border:1px solid transparent;
+}
+
+.navLink.active{
+  color:var(--text);
+  border-color:rgba(255,255,255,.12);
+  background:rgba(255,255,255,.06);
+}
+
+.pillBtn{
+  margin-left:auto;
+  padding:10px 14px;
+  border-radius:999px;
+  border:1px solid rgba(255,255,255,.14);
+  background:linear-gradient(135deg, rgba(255,58,165,.18), rgba(109,76,255,.16));
+}
+
+.menuBtn{
+  display:none;
+  width:44px; height:44px;
+  border-radius:12px;
+  border:1px solid rgba(255,255,255,.12);
+  background:rgba(255,255,255,.05);
+  cursor:pointer;
+  position:relative;
+}
+
+.bar{
+  display:block; height:2px; width:20px;
+  background:rgba(234,240,255,.9);
+  position:absolute; left:12px;
+  transition: transform .2s ease, opacity .2s ease, top .2s ease;
+}
+
+.bar:nth-child(1){top:14px}
+.bar:nth-child(2){top:21px}
+.bar:nth-child(3){top:28px}
+
+.bar1{top:21px; transform:rotate(45deg)}
+.bar2{opacity:0}
+.bar3{top:21px; transform:rotate(-45deg)}
+
+@media (max-width: 760px){
+  .menuBtn{display:inline-block}
+
+  .navLinks{
+    display:none;
+    flex-direction:column;
+    align-items:flex-start;
+    padding:10px;
+    border:1px solid var(--stroke);
+    background:rgba(13,18,34,.85);
+    border-radius:14px;
+  }
+
+  .navLinks.open{display:flex}
+  .pillBtn{margin-left:0; width:100%; text-align:center}
+}

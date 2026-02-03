@@ -1,0 +1,30 @@
+.shimmer{
+  position:relative;
+  overflow:hidden;
+}
+.shimmer::after{
+  content:"";
+  position:absolute; inset:0;
+  transform:translateX(-100%);
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,.10), transparent);
+  animation: shimmer 1.0s infinite;
+}
+@keyframes shimmer{ to{ transform:translateX(100%) } }
+
+.skeletonCard{
+  border-radius: var(--radius);
+  border:1px solid rgba(255,255,255,.10);
+  background:rgba(13,18,34,.55);
+  overflow:hidden;
+}
+.skMedia{ height:160px; background:rgba(255,255,255,.06) }
+.skBody{ padding:12px; display:flex; flex-direction:column; gap:10px }
+.skLine{ height:12px; border-radius:999px; background:rgba(255,255,255,.06) }
+.skLine.short{ width:60% }
+
+.skTextWrap{ display:flex; flex-direction:column; gap:10px }
+
+.detailHeroSkeleton{
+  height:320px;
+  background:rgba(255,255,255,.06);
+}
