@@ -1,3 +1,4 @@
+// src/pages/Results.jsx
 import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { searchVehicles } from "../api/vehicleApi";
@@ -12,6 +13,13 @@ export default function Results() {
   const query = params.get("query") || "";
   const state = params.get("state") || "HI";
 
+  // ✅ year forced into 2015–2020
+  const yearParam = Number(params.get("year") || 2018);
+  const year = Math.min(
+    2020,
+    Math.max(2015, Number.isFinite(yearParam) ? yearParam : 2018),
+  );
+
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [vehicles, setVehicles] = useState([]);
@@ -20,6 +28,7 @@ export default function Results() {
     const q = query.trim();
     return q ? `Results for "${q}" in ${state}` : `Results in ${state}`;
   }, [query, state]);
+
   useEffect(() => {
     let cancelled = false;
 
@@ -28,7 +37,7 @@ export default function Results() {
         setLoading(true);
         setError("");
 
-        const items = await searchVehicles({ query, state });
+        const items = await searchVehicles({ query, state, year });
         if (!cancelled) setVehicles(items);
       } catch (e) {
         if (!cancelled) setError(e.message || "Request failed");
@@ -37,13 +46,11 @@ export default function Results() {
       }
     }
 
-    // ✅ only run when query/state changes
     run();
-
     return () => {
       cancelled = true;
     };
-  }, [query, state]);
+  }, [query, state, year]);
 
   return (
     <section className="page container">
@@ -51,7 +58,8 @@ export default function Results() {
         <div>
           <h2 className="pageTitle">{title}</h2>
           <p className="pageHint">
-            Click a card to route to <code>/vehicle/:id</code>.
+            Year locked to <b>{year}</b>. Click a card to route to{" "}
+            <code>/vehicle/:id</code>.
           </p>
         </div>
 

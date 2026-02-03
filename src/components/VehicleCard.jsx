@@ -5,10 +5,17 @@ export default function VehicleCard({ vehicle, onClick }) {
   return (
     <button className="vehicleCard" onClick={onClick} type="button">
       <div className="vehicleCardMedia">
-        <img
-          src={vehicle.imageUrl}
-          alt={`${vehicle.year} ${vehicle.make} ${vehicle.model}`}
-        />
+      <img
+  src={vehicle.imageUrl}
+  alt={`${vehicle.year} ${vehicle.make} ${vehicle.model}`}
+  loading="lazy"
+  onError={(e) => {
+    e.currentTarget.onerror = null;
+    e.currentTarget.src =
+      "https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=1200&q=60";
+  }}
+/>
+
         <div className="vehicleTag">{vehicle.type}</div>
       </div>
 
