@@ -5,7 +5,6 @@ import VehicleCard from "../components/VehicleCard";
 import SkeletonCard from "../components/SkeletonCard";
 import "./Results.css";
 
-
 export default function Results() {
   const navigate = useNavigate();
   const [params] = useSearchParams();
@@ -21,29 +20,28 @@ export default function Results() {
     const q = query.trim();
     return q ? `Results for "${q}" in ${state}` : `Results in ${state}`;
   }, [query, state]);
-
   useEffect(() => {
-    let mounted = true;
+    let cancelled = false;
 
     async function run() {
-      setLoading(true);
-      setError("");
-
       try {
-        const data = await searchVehicles({ query, state });
-        if (!mounted) return;
-        setVehicles(Array.isArray(data) ? data.slice(0, 6) : []);
+        setLoading(true);
+        setError("");
+
+        const items = await searchVehicles({ query, state });
+        if (!cancelled) setVehicles(items);
       } catch (e) {
-        if (!mounted) return;
-        setError(e?.message || "Something went wrong");
+        if (!cancelled) setError(e.message || "Request failed");
       } finally {
-        if (mounted) setLoading(false);
+        if (!cancelled) setLoading(false);
       }
     }
 
+    // ✅ only run when query/state changes
     run();
+
     return () => {
-      mounted = false;
+      cancelled = true;
     };
   }, [query, state]);
 
@@ -52,7 +50,9 @@ export default function Results() {
       <div className="rowBetween">
         <div>
           <h2 className="pageTitle">{title}</h2>
-          <p className="pageHint">Click a card to route to <code>/vehicle/:id</code>.</p>
+          <p className="pageHint">
+            Click a card to route to <code>/vehicle/:id</code>.
+          </p>
         </div>
 
         <button className="ghostBtn" onClick={() => navigate("/search")}>
@@ -66,7 +66,11 @@ export default function Results() {
         {loading
           ? Array.from({ length: 6 }).map((_, i) => <SkeletonCard key={i} />)
           : vehicles.map((v) => (
-              <VehicleCard key={v.id} vehicle={v} onClick={() => navigate(`/vehicle/${v.id}`)} />
+              <VehicleCard
+                key={v.id}
+                vehicle={v}
+                onClick={() => navigate(`/vehicle/${v.id}`)}
+              />
             ))}
       </div>
     </section>

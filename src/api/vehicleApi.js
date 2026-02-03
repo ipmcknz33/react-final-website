@@ -4,9 +4,11 @@ const RAPIDAPI_KEY = import.meta.env.VITE_RAPIDAPI_KEY;
 const RAPIDAPI_HOST = import.meta.env.VITE_RAPIDAPI_HOST;
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
-if (!API_BASE_URL || !RAPIDAPI_KEY || !RAPIDAPI_HOST) {
+if (!RAPIDAPI_KEY || !RAPIDAPI_HOST || !API_BASE_URL) {
   throw new Error(
-    "Missing env vars. Ensure .env has VITE_API_BASE_URL, VITE_RAPIDAPI_KEY, VITE_RAPIDAPI_HOST and restart Vite."
+    "Missing env vars. Ensure .env is in PROJECT ROOT (not /src) and contains:\n" +
+      "VITE_RAPIDAPI_KEY=...\nVITE_RAPIDAPI_HOST=car-api2.p.rapidapi.com\nVITE_API_BASE_URL=https://car-api2.p.rapidapi.com\n" +
+      "Then restart: Ctrl+C → Y → npm run dev"
   );
 }
 
@@ -15,14 +17,20 @@ const DEFAULT_HEADERS = {
   "x-rapidapi-host": RAPIDAPI_HOST,
 };
 
+function normalize(str = "") {
+  return String(str).trim().toLowerCase();
+}
+
 async function fetchJson(url) {
   const res = await fetch(url, { headers: DEFAULT_HEADERS });
-  const text = await res.text();
-  const type = res.headers.get("content-type") || "";
 
-  if (!type.includes("application/json")) {
+  const contentType = res.headers.get("content-type") || "";
+  const text = await res.text();
+
+  // RapidAPI sometimes returns HTML when auth/endpoint is wrong
+  if (!contentType.includes("application/json")) {
     throw new Error(
-      `Non-JSON response\nURL: ${url}\nStatus: ${res.status}\nBody: ${text.slice(
+      `Non-JSON response. URL: ${url}\nStatus: ${res.status}\nContent-Type: ${contentType}\nBody starts with: ${text.slice(
         0,
         120
       )}`
@@ -30,40 +38,89 @@ async function fetchJson(url) {
   }
 
   const data = JSON.parse(text);
-  if (!res.ok) throw new Error(JSON.stringify(data));
+
+  if (!res.ok) {
+    throw new Error(
+      `API error ${res.status}: ${JSON.stringify(data).slice(0, 200)}`
+    );
+  }
+
   return data;
 }
 
 /**
- * ✅ EXPORT #1 — SEARCH (Results page)
+ * Search vehicles (uses makes -> models)
+ * Returns 6 cards
  */
 export async function searchVehicles({ query = "", state = "" }) {
-  const q = query.trim().toLowerCase();
+  const q = normalize(query);
+  if (!q) return [];
 
-  // get all makes
   const makesRes = await fetchJson(`${API_BASE_URL}/api/makes`);
-  const makes = makesRes.data || [];
+
+  const makesRaw =
+    makesRes?.data?.data ||
+    makesRes?.data ||
+    makesRes?.results ||
+    makesRes ||
+    [];
+
+  const makes = Array.isArray(makesRaw) ? makesRaw : [];
+
+  const toMakeName = (m) =>
+    normalize(
+      m?.make ||
+        m?.make_name ||
+        m?.name ||
+        m?.Make ||
+        m?.MakeName ||
+        ""
+    );
 
   const make =
-    makes.find((m) =>
-      String(m.make || m.make_name || "")
-        .toLowerCase()
-        .includes(q)
-    ) || makes[0];
+    makes.find((m) => toMakeName(m) === q) ||
+    makes.find((m) => toMakeName(m).includes(q));
 
-  if (!make) return [];
+  if (!make) {
+    const sample = makes.slice(0, 5).map((m) => ({
+      make_id: m.make_id ?? m.id ?? null,
+      make: m.make ?? m.make_name ?? m.name ?? null,
+    }));
+    throw new Error(
+      `No make found for "${query}". Example API items: ${JSON.stringify(sample)}`
+    );
+  }
 
-  // get models for make
+  const makeId = Number(make.make_id ?? make.id);
+  if (!Number.isFinite(makeId) || makeId <= 0) {
+    throw new Error(
+      `Make found but make_id is invalid. Got: ${JSON.stringify({
+        make_id: make.make_id ?? make.id,
+        make: make.make ?? make.make_name ?? make.name,
+      })}`
+    );
+  }
+
   const modelsRes = await fetchJson(
-    `${API_BASE_URL}/api/models?make_id=${make.make_id}`
+    `${API_BASE_URL}/api/models?make_id=${encodeURIComponent(makeId)}`
   );
-  const models = modelsRes.data || [];
 
-  return models.slice(0, 6).map((m, i) => ({
-    id: String(m.model_id || i),
+  const modelsRaw =
+    modelsRes?.data?.data ||
+    modelsRes?.data ||
+    modelsRes?.results ||
+    modelsRes ||
+    [];
+
+  const models = Array.isArray(modelsRaw) ? modelsRaw : [];
+
+  const displayMake = make.make || make.make_name || make.name || "Unknown";
+
+  return models.slice(0, 6).map((model, idx) => ({
+    id: String(model.model_id || model.id || idx + 1),
     year: "N/A",
-    make: make.make,
-    model: m.model,
+    make: displayMake,
+    model: model.model || model.model_name || model.name || "Unknown",
     type: "Model",
     pricePerMonth: 799,
     mpg: 25,
@@ -71,35 +128,37 @@ export async function searchVehicles({ query = "", state = "" }) {
     state: state || "N/A",
     imageUrl:
       "https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=1200&q=60",
-    raw: m,
+    raw: { make, model },
   }));
 }
 
 /**
- * ✅ EXPORT #2 — DETAILS (Vehicle page)
+ * Details route: /vehicle/:id
+ * For now, treat id as model_id and show model info.
  */
 export async function getVehicleById(id) {
-  // fallback model-based details (VIN optional later)
-  const modelsRes = await fetchJson(`${API_BASE_URL}/api/models`);
-  const list = modelsRes.data || [];
+  const modelId = Number(id);
+  if (!Number.isFinite(modelId) || modelId <= 0) {
+    throw new Error("Vehicle id must be a positive number (model_id).");
+  }
 
-  const found = list.find(
-    (m) => String(m.model_id) === String(id)
-  );
+  const modelsRes = await fetchJson(`${API_BASE_URL}/api/models?id=${modelId}`);
+  const list =
+    modelsRes?.data?.data || modelsRes?.data || modelsRes?.results || [];
 
-  if (!found) throw new Error("Vehicle not found");
+  const model = Array.isArray(list) ? list[0] : null;
 
   return {
-    id,
+    id: String(id),
     year: "N/A",
-    make: found.make || "Unknown",
-    model: found.model || "Unknown",
+    make: model?.make || model?.make_name || model?.make_id || "Unknown",
+    model: model?.model || model?.model_name || model?.name || "Unknown",
     type: "Model",
     pricePerMonth: 799,
     mpg: "N/A",
     drivetrain: "N/A",
     imageUrl:
       "https://images.unsplash.com/photo-1502877338535-766e1452684a?auto=format&fit=crop&w=1200&q=60",
-    raw: found,
+    raw: model,
   };
 }
