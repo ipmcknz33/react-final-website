@@ -57,8 +57,7 @@ export default function Search() {
       </form>
 
       <div className="noteBox">
-        <strong>API hook point:</strong> results page calls <code>searchVehicles()</code> in{" "}
-        <code>src/api/vehicleApi.js</code>.
+      
       </div>
     </section>
   );
