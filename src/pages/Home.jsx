@@ -29,11 +29,7 @@ export default function Home() {
             </button>
           </div>
 
-          <div className="heroBadgeRow">
-            <div className="badge">Instant routing</div>
-            <div className="badge">Skeleton loading</div>
-            <div className="badge">Responsive UI</div>
-          </div>
+          
         </div>
 
         <div className="heroArt" aria-hidden="true">
@@ -62,7 +58,7 @@ export default function Home() {
       </div>
 
       <footer className="footer" id="contact">
-        <small>Final project scaffold • Hook your API into src/api/vehicleApi.js</small>
+        
       </footer>
     </section>
   );
