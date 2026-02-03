@@ -1,5 +1,5 @@
 import React from "react";
-import "../pages/skeletons.css";
+import "../pages/Skeletons.css";
 
 
 export default function SkeletonCard() {
