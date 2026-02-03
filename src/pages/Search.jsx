@@ -5,11 +5,56 @@ import "./Search.css";
 
 const YEARS = [2015, 2016, 2017, 2018, 2019, 2020];
 const US_STATES = [
-  "AL","AK","AZ","AR","CA","CO","CT","DE","FL","GA",
-  "HI","ID","IL","IN","IA","KS","KY","LA","ME","MD",
-  "MA","MI","MN","MS","MO","MT","NE","NV","NH","NJ",
-  "NM","NY","NC","ND","OH","OK","OR","PA","RI","SC",
-  "SD","TN","TX","UT","VT","VA","WA","WV","WI","WY"
+  "AL",
+  "AK",
+  "AZ",
+  "AR",
+  "CA",
+  "CO",
+  "CT",
+  "DE",
+  "FL",
+  "GA",
+  "HI",
+  "ID",
+  "IL",
+  "IN",
+  "IA",
+  "KS",
+  "KY",
+  "LA",
+  "ME",
+  "MD",
+  "MA",
+  "MI",
+  "MN",
+  "MS",
+  "MO",
+  "MT",
+  "NE",
+  "NV",
+  "NH",
+  "NJ",
+  "NM",
+  "NY",
+  "NC",
+  "ND",
+  "OH",
+  "OK",
+  "OR",
+  "PA",
+  "RI",
+  "SC",
+  "SD",
+  "TN",
+  "TX",
+  "UT",
+  "VT",
+  "VA",
+  "WA",
+  "WV",
+  "WI",
+  "WY",
 ];
 
 export default function Search() {
@@ -40,8 +85,8 @@ export default function Search() {
 
     navigate(
       `/results?query=${encodeURIComponent(q)}&state=${encodeURIComponent(
-        state
-      )}&year=${encodeURIComponent(y)}`
+        state,
+      )}&year=${encodeURIComponent(y)}`,
     );
   }
 
@@ -52,11 +97,13 @@ export default function Search() {
 
         <form className="search__form" onSubmit={onSubmit}>
           <div className="search__field">
-            <label>Make (ex: toyota, honda, bmw)</label>
+            <label>
+              Make (ex:Lamborghini, Porshe, Audi, toyota, honda, bmw)
+            </label>
             <input
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder="toyota"
+              placeholder="Lamborghini"
             />
           </div>
 
